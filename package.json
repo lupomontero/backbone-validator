@@ -10,8 +10,8 @@
     "jslint": "0.1.8",
     "backbone": "0.9.1"
   },
-  "main": "lib/backbone-validator",
   "scripts": {
-    "test": "./node_modules/jslint/bin/jslint.js lib/backbone-validator.js"
+    "pretest": "./node_modules/jslint/bin/jslint.js index.js",
+    "test": "./node_modules/vows/bin/vows test/test-validator.js --spec"
   }
 }

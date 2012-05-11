@@ -3,7 +3,7 @@ var
   assert = require('assert'),
   vows = require('vows'),
   suite = vows.describe('backbone-validator'),
-  validator = require(__dirname + '/../lib/backbone-validator'),
+  validator = require(__dirname + '/../index'),
 
   MyModel = Backbone.Model.extend({
     validate: validator.create({
