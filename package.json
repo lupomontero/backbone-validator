@@ -1,0 +1,17 @@
+{
+  "name": "backbone-validator",
+  "version": "0.0.0",
+  "author": "Lupo Montero <lupo@e-noise.com>",
+  "dependencies": {
+    "underscore": "1.3.1"
+  },
+  "devDependencies": {
+    "vows": " 0.6.2",
+    "jslint": "0.1.8",
+    "backbone": "0.9.1"
+  },
+  "main": "lib/backbone-validator",
+  "scripts": {
+    "test": "./node_modules/jslint/bin/jslint.js lib/backbone-validator.js"
+  }
+}
