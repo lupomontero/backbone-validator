@@ -26,68 +26,69 @@
 
   module.exports.REGEX_EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-  module.exports.create = function (options) {
-    return function (attrs) {
+  module.exports.create = function (schema) {
+    return function (attrs, options) {
       var k, v, rules, msg;
 
       for (k in attrs) {
         if (attrs.hasOwnProperty(k)) {
           v = attrs[k];
-          rules = options[k];
-
-          // trim strings...
-          if (_.isString(v)) { v = v.trim(); this.attributes[k] = v; }
+          rules = schema[k];
 
           if (rules) {
             if (rules.type) {
               msg = 'Attribute "' + k + '" must be a of type ' + rules.type;
               switch (rules.type) {
               case 'boolean':
-                if (!_.isBoolean(v)) { return new Error(msg); }
+                if (!_.isBoolean(v)) { return msg; }
                 break;
               case 'number':
-                if (!_.isNumber(v)) { return new Error(msg); }
+                if (!_.isNumber(v)) { return msg; }
                 break;
               case 'string':
-                if (!_.isString(v)) { return new Error(msg); }
+                if (!_.isString(v)) { return msg; }
                 break;
               case 'email':
-                if (!module.exports.REGEX_EMAIL.test(v)) { return new Error(msg); }
+                if (!module.exports.REGEX_EMAIL.test(v)) { return msg; }
                 break;
               case 'date':
                 if (_.isString(v) || _.isNumber(v)) {
                   v = new Date(v);
                   this.attributes[k] = v;
                 }
-                if (!_.isDate(v)) { return new Error(msg); }
+                if (!_.isDate(v)) { return msg; }
                 break;
               case 'array':
-                if (!_.isArray(v)) { return new Error(msg); }
+                if (!_.isArray(v)) { return msg; }
                 break;
               }
             }
 
             if (rules.equal && v !== rules.equal) {
-              return new Error('Attribute "' + k + '" must be equal to "' +
-                               rules.equal + '".');
+              return [
+                'Attribute "', k, '" must be equal to "', rules.equal, '".'
+              ].join('');
             }
 
             if (rules['enum'] && _.indexOf(rules['enum'], v) === -1) {
-              return new Error('Attribute "' + k + '" must be one of "' +
-                               rules['enum'].join(', ') + '" and "' + v +
-                               '" was passed instead.');
+              return [
+                'Attribute "', k, '" must be one of "',
+                rules['enum'].join(', '), '" and "', v, '" was passed instead.'
+              ].join('');
             }
 
             if (rules.regexp && _.isRegExp(rules.regexp)) {
               if (!rules.regexp.test(v)) {
-                return new Error('Attribute "' + k + '" must match regexp "' +
-                                 JSON.stringify(rules.regexp) + '".');
+                return [
+                  'Attribute "', k, '" must match regexp "',
+                  JSON.stringify(rules.regexp), '".'
+                ].join('');
               }
             }
 
             if (rules.custom && _.isFunction(rules.custom)) {
               msg = rules.custom(v);
-              if (msg) { return new Error(msg); }
+              if (msg) { return msg; }
             }
           }
         }

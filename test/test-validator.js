@@ -24,26 +24,27 @@ suite.addBatch({
         email: 'lupo@e-noise.com'
       });
 
-      this.callback(null, foo.validate(foo.toJSON()));
+      // Manually fire the callback as returning "undefined" will not work...
+      this.callback(foo.validate(foo.toJSON()));
     },
-    'validation returns undefined': function (er, ret) {
-      assert.ok(ret === undefined);
+    'validation returns undefined': function (er) {
+      assert.ok(er === undefined);
     }
   },
 
   'validate bad email': {
     topic: function () {
-      var foo = new MyModel({
-        type: 'user',
-        firstname: 'Lupo',
-        lastname: 'Montero',
-        email: 'not an email'
-      });
+      var self = this, foo = new MyModel();
 
-      this.callback(null, foo.validate(foo.toJSON()));
+      foo.set({ email: 'not an email' }, {
+        error: function (model, er, options) {
+          self.callback(er, model);
+        }
+      });
     },
-    'validation returns undefined': function (er, ret) {
-      assert.ok(ret.message === 'Attribute "email" must be a of type email');
+    'validation returns expected error': function (er, model) {
+      assert.equal(er, 'Attribute "email" must be a of type email');
+      assert.equal(model.get('email'), undefined);
     }
   }
 });
