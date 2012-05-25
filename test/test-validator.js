@@ -10,11 +10,12 @@ var
       type: { equal: 'user' },
       firstname: { type: 'string' },
       lastname: { type: 'string' },
-      email: { type: 'email' }
+      email: { type: 'email', required: true }
     })
   });
 
 suite.addBatch({
+
   'validate all good': {
     topic: function () {
       var foo = new MyModel({
@@ -43,10 +44,26 @@ suite.addBatch({
       });
     },
     'validation returns expected error': function (er, model) {
-      assert.equal(er, 'Attribute "email" must be a of type email');
+      assert.equal(er, 'Attribute "email" must be a of type email.');
       assert.equal(model.get('email'), undefined);
     }
+  },
+
+  'try to set required field to empty': {
+    topic: function () {
+      var self = this, foo = new MyModel({ email: 'someone@somewhere.com' });
+
+      foo.on('error', function (model, er, options) {
+        self.callback(er, model);
+      });
+      foo.set({ email: '' });
+    },
+    'get error and check that value hasnt been set': function (er, model) {
+      assert.equal(er, 'Attribute "email" is required.');
+      assert.equal(model.get('email'), 'someone@somewhere.com');
+    }
   }
+
 });
 
 suite.export(module);

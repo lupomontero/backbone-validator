@@ -36,8 +36,12 @@
           rules = schema[k];
 
           if (rules) {
+            if (rules.required && (_.isUndefined(v) || _.isNull(v) || v === '')) {
+              return 'Attribute "' + k + '" is required.';
+            }
+
             if (rules.type) {
-              msg = 'Attribute "' + k + '" must be a of type ' + rules.type;
+              msg = 'Attribute "' + k + '" must be a of type ' + rules.type + '.';
               switch (rules.type) {
               case 'boolean':
                 if (!_.isBoolean(v)) { return msg; }
