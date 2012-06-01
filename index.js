@@ -42,7 +42,7 @@
             }
 
             if (rules.type) {
-              msg = 'Attribute "' + k + '" must be a of type ' + rules.type + '.';
+              msg = 'Attribute "' + k + '" must be of type ' + rules.type + '.';
               switch (rules.type) {
               case 'boolean':
                 if (!_.isBoolean(v)) { return msg; }
@@ -55,6 +55,9 @@
                 break;
               case 'email':
                 if (!module.exports.REGEX_EMAIL.test(v)) { return msg; }
+                break;
+              case 'url':
+                if (!module.exports.REGEX_URL.test(v)) { return msg; }
                 break;
               case 'date':
                 if (_.isString(v) || _.isNumber(v)) {

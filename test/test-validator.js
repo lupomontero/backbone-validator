@@ -10,7 +10,8 @@ var
       type: { equal: 'user' },
       firstname: { type: 'string' },
       lastname: { type: 'string' },
-      email: { type: 'email', required: true }
+      email: { type: 'email', required: true },
+      url: { type: 'url' }
     })
   });
 
@@ -44,7 +45,7 @@ suite.addBatch({
       });
     },
     'validation returns expected error': function (er, model) {
-      assert.equal(er, 'Attribute "email" must be a of type email.');
+      assert.equal(er, 'Attribute "email" must be of type email.');
       assert.equal(model.get('email'), undefined);
     }
   },
@@ -61,6 +62,22 @@ suite.addBatch({
     'get error and check that value hasnt been set': function (er, model) {
       assert.equal(er, 'Attribute "email" is required.');
       assert.equal(model.get('email'), 'someone@somewhere.com');
+    }
+  },
+
+  'test type url (not a url)': {
+    topic: function () {
+      var self = this, foo = new MyModel();
+
+      foo.set({ url: 'not a url'  }, {
+        error: function (model, er, options) {
+          self.callback(er, model);
+        }
+      });
+    },
+    'get expected error message': function (er, model) {
+      assert.equal(er, 'Attribute "url" must be of type url.');
+      assert.equal(model.get('url'), undefined);
     }
   }
 
