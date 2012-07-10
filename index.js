@@ -41,7 +41,7 @@
             }
 
             if (rules.type) {
-              msg = 'Attribute "' + k + '" must be a of type ' + rules.type +
+              msg = 'Attribute "' + k + '" must be of type ' + rules.type +
                     ' and got value "' + v + '".';
               switch (rules.type) {
               case 'boolean':
