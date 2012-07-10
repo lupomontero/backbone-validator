@@ -1,4 +1,4 @@
-// backbone-validator.js 0.0.0
+// backbone-validator.js 0.0.4
 // (c) 2012 Lupo Montero
 // Licensed under the MIT license.
 
