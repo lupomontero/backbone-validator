@@ -45,7 +45,7 @@ suite.addBatch({
       });
     },
     'validation returns expected error': function (er, model) {
-      assert.equal(er, 'Attribute "email" must be of type email.');
+      assert.equal(er, 'Attribute "email" must be of type email and got value "not an email".');
       assert.equal(model.get('email'), undefined);
     }
   },
@@ -76,7 +76,7 @@ suite.addBatch({
       });
     },
     'get expected error message': function (er, model) {
-      assert.equal(er, 'Attribute "url" must be of type url.');
+      assert.equal(er, 'Attribute "url" must be of type url and got value "not a url".');
       assert.equal(model.get('url'), undefined);
     }
   }
