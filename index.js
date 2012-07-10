@@ -41,13 +41,16 @@
             }
 
             if (rules.type) {
-              msg = 'Attribute "' + k + '" must be a of type ' + rules.type + '.';
+              msg = 'Attribute "' + k + '" must be a of type ' + rules.type +
+                    ' and got value "' + v + '".';
               switch (rules.type) {
               case 'boolean':
                 if (!_.isBoolean(v)) { return msg; }
                 break;
               case 'number':
                 if (!_.isNumber(v)) { return msg; }
+                // TODO: Implement range for numbers.
+                //if (rules.range) {}
                 break;
               case 'string':
                 if (!_.isString(v)) { return msg; }
@@ -66,6 +69,15 @@
                 if (!_.isArray(v)) { return msg; }
                 break;
               }
+
+              if (rules.type === 'string' || rules.type === 'array') {
+                if (rules.minLength && v.length < rules.minLength) {
+                  return 'Attribute "' + k + '" too short.';
+                }
+                if (rules.maxLength && v.length > rules.maxLength) {
+                  return 'Attribute "' + k + '" too long.';
+                }
+              }
             }
 
             if (rules.equal && v !== rules.equal) {
@@ -83,10 +95,18 @@
 
             if (rules.regexp && _.isRegExp(rules.regexp)) {
               if (!rules.regexp.test(v)) {
-                return [
-                  'Attribute "', k, '" must match regexp "',
-                  JSON.stringify(rules.regexp), '".'
-                ].join('');
+                var
+                  toSource = rules.regexp.toSource,
+                  regexpSource = (toSource) ? toSource() : undefined,
+                  msg = 'Attribute "' + k + '" must match regexp';
+
+                if (regexpSource) {
+                  msg += ' "' + regexpSource + '"';
+                }
+
+                msg += ' and got value "' + v + '".';
+
+                return msg;
               }
             }
 
