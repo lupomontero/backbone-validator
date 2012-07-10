@@ -25,6 +25,7 @@
   }
 
   module.exports.REGEX_EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  module.exports.REGEX_URL = /^(https?:\/\/)?([\da-z\.\-]+)\.([a-z\.]{2,6})([\/\w \.\-]*)*\/?$/;
 
   module.exports.create = function (schema) {
     return function (attrs, options) {
@@ -57,6 +58,9 @@
                 break;
               case 'email':
                 if (!module.exports.REGEX_EMAIL.test(v)) { return msg; }
+                break;
+              case 'url':
+                if (!module.exports.REGEX_URL.test(v)) { return msg; }
                 break;
               case 'date':
                 if (_.isString(v) || _.isNumber(v)) {
@@ -97,13 +101,10 @@
               if (!rules.regexp.test(v)) {
                 var
                   toSource = rules.regexp.toSource,
-                  regexpSource = (toSource) ? toSource() : undefined,
-                  msg = 'Attribute "' + k + '" must match regexp';
+                  regexpSource = (toSource) ? toSource() : undefined;
 
-                if (regexpSource) {
-                  msg += ' "' + regexpSource + '"';
-                }
-
+                msg = 'Attribute "' + k + '" must match regexp';
+                if (regexpSource) { msg += ' "' + regexpSource + '"'; }
                 msg += ' and got value "' + v + '".';
 
                 return msg;
