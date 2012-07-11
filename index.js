@@ -1,4 +1,4 @@
-// backbone-validator.js 0.0.4
+// backbone-validator.js 0.0.5
 // (c) 2012 Lupo Montero
 // Licensed under the MIT license.
 
@@ -29,19 +29,20 @@
 
   module.exports.create = function (schema) {
     return function (attrs, options) {
-      var k, v, rules, msg;
+      var k, v, rules, msg, isSomething;
 
       for (k in attrs) {
         if (attrs.hasOwnProperty(k)) {
           v = attrs[k];
           rules = schema[k];
+          isSomething = (!_.isUndefined(v) && !_.isNull(v) && v !== '');
 
           if (rules) {
-            if (rules.required && (_.isUndefined(v) || _.isNull(v) || v === '')) {
+            if (rules.required && !isSomething) {
               return 'Attribute "' + k + '" is required.';
             }
 
-            if (rules.type) {
+            if (rules.type && isSomething) {
               msg = 'Attribute "' + k + '" must be of type ' + rules.type +
                     ' and got value "' + v + '".';
               switch (rules.type) {
@@ -63,10 +64,6 @@
                 if (!module.exports.REGEX_URL.test(v)) { return msg; }
                 break;
               case 'date':
-                if (_.isString(v) || _.isNumber(v)) {
-                  v = new Date(v);
-                  this.attributes[k] = v;
-                }
                 if (!_.isDate(v)) { return msg; }
                 break;
               case 'array':
@@ -76,10 +73,18 @@
 
               if (rules.type === 'string' || rules.type === 'array') {
                 if (rules.minLength && v.length < rules.minLength) {
-                  return 'Attribute "' + k + '" too short.';
+                  return [
+                    'Attribute "', k, '" was expected to have a minimum ',
+                    'length of ', rules.minLength, ' and the current value ("',
+                    v, '") has a length of ', v.length, '.'
+                  ].join('');
                 }
                 if (rules.maxLength && v.length > rules.maxLength) {
-                  return 'Attribute "' + k + '" too long.';
+                  return [
+                    'Attribute "', k, '" was expected to have a maximum ',
+                    'length of ', rules.maxLength, ' and the current value ("',
+                    v, '") has a length of ', v.length, '.'
+                  ].join('');
                 }
               }
             }
