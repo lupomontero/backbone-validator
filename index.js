@@ -24,8 +24,8 @@
     throw new Error('Please make sure that underscore is loaded!');
   }
 
-  module.exports.REGEX_EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  module.exports.REGEX_URL = /^(https?:\/\/)?([\da-z\.\-]+)\.([a-z\.]{2,6})([\/\w \.\-]*)*\/?$/;
+  module.exports.REGEXP_EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  module.exports.REGEXP_URL = /^(https?:\/\/)?([\da-z\.\-]+)\.([a-z\.]{2,6})([\/\w \.\-]*)*\/?$/;
 
   module.exports.create = function (schema) {
     return function (attrs, options) {
@@ -58,10 +58,10 @@
                 if (!_.isString(v)) { return msg; }
                 break;
               case 'email':
-                if (!module.exports.REGEX_EMAIL.test(v)) { return msg; }
+                if (!module.exports.REGEXP_EMAIL.test(v)) { return msg; }
                 break;
               case 'url':
-                if (!module.exports.REGEX_URL.test(v)) { return msg; }
+                if (!module.exports.REGEXP_URL.test(v)) { return msg; }
                 break;
               case 'date':
                 if (!_.isDate(v)) { return msg; }
