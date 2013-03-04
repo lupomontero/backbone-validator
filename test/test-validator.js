@@ -35,13 +35,11 @@ exports.validateAllGood = function (t) {
 
 exports.validateBadEmail = function (t) {
   var m = new MyModel();
-
   m.on('invalid', function (m, err) {
     t.equal(m.get('email'), undefined);
     t.equal(err, 'Attribute "email" must be of type email and got value "not an email".');
     t.done();
   });
-
   m.set({ email: 'not an email' }, { validate: true });
 };
 
@@ -52,7 +50,6 @@ exports.validateStringMaxLengthFailure = function (t) {
     t.equal(m.get('organisation'), undefined);
     t.done();
   });
-
   m.set({
     organisation: 'Some very long string that won\'nt fit here!'
   }, { validate: true });
