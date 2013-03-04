@@ -1,13 +1,12 @@
-// backbone-validator.js 0.0.5
+// backbone-validator.js 0.0.7
 // (c) 2012 Lupo Montero
 // Licensed under the MIT license.
 
-/*jslint indent: 2, nomen: true, vars: true, regexp: true */
-/*global window: false, _: false */
-
-'use strict';
+/*global window, _, require, module */
 
 (function (module) {
+
+  'use strict';
 
   var _;
 
@@ -106,7 +105,7 @@
               if (!rules.regexp.test(v)) {
                 var
                   toSource = rules.regexp.toSource,
-                  regexpSource = (toSource) ? toSource() : undefined;
+                  regexpSource = _.isFunction(toSource) ? toSource() : undefined;
 
                 msg = 'Attribute "' + k + '" must match regexp';
                 if (regexpSource) { msg += ' "' + regexpSource + '"'; }
