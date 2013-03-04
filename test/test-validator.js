@@ -19,14 +19,17 @@ var
   });
 
 exports.validateAllGood = function (t) {
-  var foo = new MyModel({
+  var m = new MyModel({
     type: 'user',
     firstname: 'Lupo',
     lastname: 'Montero',
     email: 'lupo@e-noise.com'
-  });
+  }, { validate: true });
 
-  t.ok(true); // FIXME!!!
+  t.equal(m.get('type'), 'user');
+  t.equal(m.get('firstname'), 'Lupo');
+  t.equal(m.get('lastname'), 'Montero');
+  t.equal(m.get('email'), 'lupo@e-noise.com');
   t.done();
 };
 
