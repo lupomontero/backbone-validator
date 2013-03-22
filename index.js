@@ -80,14 +80,14 @@
 
       var condition;
       switch (options) {
-        case 'boolean' : condition = (_.isBoolean(v));                  break;
-        case 'number'  : condition = (_.isNumber(v));                   break;
-        case 'string'  : condition = (_.isString(v));                   break;
-        case 'date'    : condition = (_.isDate(v));                     break;
-        case 'array'   : condition = (_.isArray(v));                    break;
-        case 'email'   : condition = (validator.REGEXP_EMAIL.test(v));  break;
-        case 'url'     : condition = (validator.REGEXP_URL.test(v));    break;
-        case 'domain'  : condition = (validator.REGEXP_DOMAIN.test(v)); break;
+        case 'boolean' : condition = _.isBoolean(v);                  break;
+        case 'number'  : condition = _.isNumber(v);                   break;
+        case 'string'  : condition = _.isString(v);                   break;
+        case 'date'    : condition = _.isDate(v);                     break;
+        case 'array'   : condition = _.isArray(v);                    break;
+        case 'email'   : condition = validator.REGEXP_EMAIL.test(v);  break;
+        case 'url'     : condition = validator.REGEXP_URL.test(v);    break;
+        case 'domain'  : condition = validator.REGEXP_DOMAIN.test(v); break;
       }
 
       if (!condition) { return msg; }
