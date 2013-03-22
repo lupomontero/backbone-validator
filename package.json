@@ -1,6 +1,7 @@
 {
   "name": "backbone-validator",
   "version": "0.0.8",
+  "description": "A super simple validator module for Backbone.",
   "author": "Lupo Montero <lupo@e-noise.com>",
   "dependencies": {
     "underscore": "1.4.4"
@@ -9,7 +10,8 @@
     "backbone": "1.0.0",
     "grunt": "~0.4.1",
     "grunt-contrib-nodeunit": "~0.1.2",
-    "grunt-contrib-jshint": "~0.3.0"
+    "grunt-contrib-jshint": "~0.3.0",
+    "grunt-contrib-uglify": "~0.2.0"
   },
   "scripts": {
     "pretest": "grunt jshint",

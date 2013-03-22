@@ -1,10 +1,7 @@
-# backbone-validator
+# backbone-validator [![Build Status](https://secure.travis-ci.org/lupomontero/backbone-validator.png)](http://travis-ci.org/lupomontero/backbone-validator)
 
-> A super simple validator module for [Backbone](http://backbonejs.org).
-
-It works both on the browser and nodejs.
-
-[![Build Status](https://secure.travis-ci.org/lupomontero/backbone-validator.png)](http://travis-ci.org/lupomontero/backbone-validator)
+> A super simple validator module for [Backbone](http://backbonejs.org). It
+works both on the browser and nodejs.
 
 ## Installing
 
