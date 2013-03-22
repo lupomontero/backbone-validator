@@ -1,9 +1,20 @@
 # backbone-validator
 
-[![Build Status](https://secure.travis-ci.org/lupomontero/backbone-validator.png)](http://travis-ci.org/lupomontero/backbone-validator)
-
 This is a super simple validator module for Backbone. It works both on the
 browser and nodejs.
+
+[![Build Status](https://secure.travis-ci.org/lupomontero/backbone-validator.png)](http://travis-ci.org/lupomontero/backbone-validator)
+
+## Installing
+
+In node:
+
+    npm install backbone-validator --save
+
+In the browser make sure that you add the
+[backbone-validator-min.js](https://raw.github.com/lupomontero/backbone-validator/master/backbone-validator-min.js)
+script after you have loaded both underscore and Backbone. The minimised file is
+2k.
 
 ## Usage
 
