@@ -2,12 +2,13 @@
 
 var
   Backbone = require('backbone'),
-  validator = require('../index'),
+  validator = require('./index'),
 
   MyModel = Backbone.Model.extend({
     validate: validator.create({
       type: { equal: 'user' },
       ctime: { type: 'date' },
+      someRequiredField: { required: true },
       firstname: { type: 'string' },
       lastname: { type: 'string', minLength: 2, maxLength: 24 },
       organisation: { type: 'string', maxLength: 24 },
@@ -85,13 +86,13 @@ exports.validateStringMinAndMaxLengthTogetherSuccess = function (t) {
 };
 
 exports.tryToSetRequiredFieldToEmptyString = function (t) {
-  var m = new MyModel({ email: 'someone@somewhere.com' });
+  var m = new MyModel({ someRequiredField: 'foo' });
   m.on('invalid', function (m, err) {
-    t.equal(err, 'Attribute "email" is required.');
-    t.equal(m.get('email'), 'someone@somewhere.com');
+    t.equal(err, 'Attribute "someRequiredField" is required.');
+    t.equal(m.get('someRequiredField'), 'foo');
     t.done();
   });
-  m.set({ email: '' }, { validate: true });
+  m.set({ someRequiredField: '' }, { validate: true });
 };
 
 exports.allowToSetEmptyStringWhenNotRequired = function (t) {

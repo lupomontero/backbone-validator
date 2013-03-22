@@ -1,132 +1,136 @@
-// backbone-validator.js 0.0.7
-// (c) 2012 Lupo Montero
+// backbone-validator.js 0.0.8
+// (c) 2013 Lupo Montero
 // Licensed under the MIT license.
 
-/*global window, _, require, module */
+/*global exports */
 
-(function (module) {
+(function () {
 
-  'use strict';
+  // Reference to global object.
+  var root = this;
 
-  var _;
-
-  // if no module var has been set we assume we are running in the web browser,
-  // otherwise we assume we are node.js
-  if (!module) {
-    module = { exports: {} };
-    _ = window._;
+  // Top level namespace.
+  var validator;
+  if (typeof exports !== 'undefined') {
+    validator = exports;
   } else {
-    _ = require('underscore');
+    validator = root.validator = {};
   }
 
-  if (!_) {
-    throw new Error('Please make sure that underscore is loaded!');
+  validator.VERSION = '0.0.8';
+
+  // Require Underscore, if we're on the server, and it's not already present.
+  var _ = root._;
+  if (!_ && (typeof require !== 'undefined')) { _ = require('underscore'); }
+
+  // Regular expressions for special string types.
+  validator.REGEXP_EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  validator.REGEXP_URL = /^(https?:\/\/)?([\da-z\.\-]+)\.([a-z\.]{2,6})([\/\w \.\-]*)*\/?$/;
+  validator.REGEXP_DOMAIN = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?.[a-z]{2,4}(.[a-z]{2-4})?/i;
+
+  // A helper function to figure out if a value is "something".
+  function isSomething(v) {
+    return (!_.isUndefined(v) && !_.isNull(v) && v !== '');
   }
 
-  module.exports.REGEXP_EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  module.exports.REGEXP_URL = /^(https?:\/\/)?([\da-z\.\-]+)\.([a-z\.]{2,6})([\/\w \.\-]*)*\/?$/;
+  // Validate a value against a set of rules.
+  function validateAttr(name, value, schema) {
+    var rule, msg;
+    for (rule in schema) {
+      if (schema.hasOwnProperty(rule) && _.isFunction(rules[rule])) {
+        msg = rules[rule](name, value, schema[rule]);
+        if (msg) { return msg; }
+      }
+    }
+  }
 
-  module.exports.create = function (schema) {
+  // Validation rules.
+  var rules = {
+
+    // This just checks whether a value is "something".
+    required: function (name, v, options) {
+      if (!isSomething(v)) { return 'Attribute "' + name + '" is required.'; }
+    },
+
+    equal: function (name, v, options) {
+      if (v !== options) {
+        return 'Attribute "' + name + '" must be equal to "' + options +
+               '" and got "' + v + '".';
+      }
+    },
+
+    regexp: function (name, v, options) {
+      if (_.isRegExp(options)) {
+        if (!options.test(v)) {
+          return 'Attribute "' + name + '" didn\'t match regexp. (got: "' + v + '")';
+        }
+      }
+    },
+
+    oneOf: function (name, v, options) {
+      if (_.indexOf(options, v) === -1) {
+        return 'Attribute "' + name + '" must be one of "' +
+               options.join(', ') + '" and got "' + v + '" instead.';
+      }
+    },
+
+    type: function (name, v, options) {
+      var msg = 'Attribute "' + name + '" must be of type ' + options +
+                ' and got value "' + v + '".';
+
+      if (!isSomething(v)) { return; }
+
+      switch (options) {
+      case 'boolean': if (!_.isBoolean(v)) { return msg; } break;
+      case 'number': if (!_.isNumber(v)) { return msg; } break;
+      case 'string': if (!_.isString(v)) { return msg; } break;
+      case 'date': if (!_.isDate(v)) { return msg; } break;
+      case 'array': if (!_.isArray(v)) { return msg; } break;
+      case 'email': if (!validator.REGEXP_EMAIL.test(v)) { return msg; } break;
+      case 'url': if (!validator.REGEXP_URL.test(v)) { return msg; } break;
+      case 'domain': if (!validator.REGEXP_DOMAIN.test(v)) { return msg; } break;
+      }
+    },
+
+    minLength: function (name, v, options) {
+      if (!_.isString(v) && !_.isArray(v)) { return; }
+      if (v.length < options) {
+        return 'Attribute "' + name + '" was expected to have a minimum ' +
+               'length of ' + options + ' and the current value ("' + v + '")' +
+               'has a length of ' + v.length + '.';
+      }
+    },
+
+    maxLength: function (name, v, options) {
+      if (v.length > options) {
+        return  'Attribute "' + name + '" was expected to have a maximum ' +
+                'length of ' + options + ' and the current value ("' + v +
+                '") has a length of ' + v.length + '.';
+      }
+    },
+
+    custom: function (name, v, options) {
+      if (_.isFunction(options)) {
+        msg = options(v);
+        if (msg) { return msg; }
+      }
+    }
+
+  };
+
+  // This is the main public interface. This function is used to create a
+  // validation function to be used on a model's `validate` property.
+  validator.create = function (schema) {
+    schema = schema || {};
     return function (attrs, options) {
-      var k, v, rules, msg, isSomething;
-
+      var k, msg;
       for (k in attrs) {
         if (attrs.hasOwnProperty(k)) {
-          v = attrs[k];
-          rules = schema[k];
-          isSomething = (!_.isUndefined(v) && !_.isNull(v) && v !== '');
-
-          if (rules) {
-            if (rules.required && !isSomething) {
-              return 'Attribute "' + k + '" is required.';
-            }
-
-            if (rules.type && isSomething) {
-              msg = 'Attribute "' + k + '" must be of type ' + rules.type +
-                    ' and got value "' + v + '".';
-              switch (rules.type) {
-              case 'boolean':
-                if (!_.isBoolean(v)) { return msg; }
-                break;
-              case 'number':
-                if (!_.isNumber(v)) { return msg; }
-                // TODO: Implement range for numbers.
-                //if (rules.range) {}
-                break;
-              case 'string':
-                if (!_.isString(v)) { return msg; }
-                break;
-              case 'email':
-                if (!module.exports.REGEXP_EMAIL.test(v)) { return msg; }
-                break;
-              case 'url':
-                if (!module.exports.REGEXP_URL.test(v)) { return msg; }
-                break;
-              case 'date':
-                if (!_.isDate(v)) { return msg; }
-                break;
-              case 'array':
-                if (!_.isArray(v)) { return msg; }
-                break;
-              }
-
-              if (rules.type === 'string' || rules.type === 'array') {
-                if (rules.minLength && v.length < rules.minLength) {
-                  return [
-                    'Attribute "', k, '" was expected to have a minimum ',
-                    'length of ', rules.minLength, ' and the current value ("',
-                    v, '") has a length of ', v.length, '.'
-                  ].join('');
-                }
-                if (rules.maxLength && v.length > rules.maxLength) {
-                  return [
-                    'Attribute "', k, '" was expected to have a maximum ',
-                    'length of ', rules.maxLength, ' and the current value ("',
-                    v, '") has a length of ', v.length, '.'
-                  ].join('');
-                }
-              }
-            }
-
-            if (rules.equal && v !== rules.equal) {
-              return [
-                'Attribute "', k, '" must be equal to "', rules.equal, '".'
-              ].join('');
-            }
-
-            if (rules['enum'] && _.indexOf(rules['enum'], v) === -1) {
-              return [
-                'Attribute "', k, '" must be one of "',
-                rules['enum'].join(', '), '" and "', v, '" was passed instead.'
-              ].join('');
-            }
-
-            if (rules.regexp && _.isRegExp(rules.regexp)) {
-              if (!rules.regexp.test(v)) {
-                var
-                  toSource = rules.regexp.toSource,
-                  regexpSource = _.isFunction(toSource) ? toSource() : undefined;
-
-                msg = 'Attribute "' + k + '" must match regexp';
-                if (regexpSource) { msg += ' "' + regexpSource + '"'; }
-                msg += ' and got value "' + v + '".';
-
-                return msg;
-              }
-            }
-
-            if (rules.custom && _.isFunction(rules.custom)) {
-              msg = rules.custom(v);
-              if (msg) { return msg; }
-            }
-          }
+          msg = validateAttr(k, attrs[k], schema[k]);
+          if (msg) { return msg; }
         }
       }
     };
   };
 
-  if (typeof window === 'object') {
-    window.validator = module.exports;
-  }
-
-}((typeof module === 'object') ? module : undefined));
+}).call(this);

@@ -1,18 +1,18 @@
 {
   "name": "backbone-validator",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": "Lupo Montero <lupo@e-noise.com>",
   "dependencies": {
     "underscore": "1.4.4"
   },
   "devDependencies": {
-    "backbone": "0.9.10",
-    "grunt": "~0.4.0",
-    "grunt-jslint": "~0.2.5",
-    "grunt-contrib-nodeunit": "~0.1.2"
+    "backbone": "1.0.0",
+    "grunt": "~0.4.1",
+    "grunt-contrib-nodeunit": "~0.1.2",
+    "grunt-contrib-jshint": "~0.3.0"
   },
   "scripts": {
-    "pretest": "grunt jslint",
+    "pretest": "grunt jshint",
     "test": "grunt nodeunit"
   }
 }

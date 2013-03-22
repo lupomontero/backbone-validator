@@ -2,38 +2,30 @@
 
 module.exports = function (grunt) {
 
-  grunt.loadNpmTasks('grunt-jslint');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
   // Project configuration.
   grunt.initConfig({
 
     pkg: grunt.file.readJSON('package.json'),
 
-    jslint: {
-      files: [ 'Gruntfile.js', 'index.js', 'test/test-*.js' ],
-      directives: {
-        indent: 2,
-        todo: true,
-        nomen: true,
-        sloppy: true,
-        regexp: true,
-        vars: true
-      }
+    jshint: {
+      all: [ 'Gruntfile.js', 'index.js', 'test.js' ]
     },
 
     nodeunit: {
-      files: [ 'test/test-*.js' ]
+      files: [ 'test.js' ]
     },
 
     watch: {
-      files: '<config:jslint.files>',
-      tasks: 'jslint nodeunit'
+      files: '<config:jshint.files>',
+      tasks: 'jshint nodeunit'
     }
 
   });
 
   // Default task.
-  grunt.registerTask('default', [ 'jslint', 'nodeunit' ]);
+  grunt.registerTask('default', [ 'jshint', 'nodeunit' ]);
 
 };
