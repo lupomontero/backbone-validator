@@ -60,48 +60,62 @@ the rules (ie: for the `required` rule `options` is just a boolean, for the
 `oneOf` its an array, for `custom` its a function and so on.
 
   * `required`
+
 ```javascript
 validator.create({
   message: { required: true }
 });
 ```
+
   * `equal`
+
 ```javascript
 validator.create({
   type: { equal: 'user' }
 });
 ```
+
   * `regexp`
+
 ```javascript
 validator.create({
   birthday: { regexp: /^\d{2}\/\d{2}\/\d{4}$/ }
 });
 ```
+
   * `oneOf`
+
 ```javascript
 validator.create({
   colour: { oneOf: [ 'red', 'green', 'blue' ] }
 });
 ```
+
   * `type`. Types: `boolean`, `number`, `string`, `date`, `array`, `email`,
     `url` and `domain`.
+
 ```javascript
 validator.create({
   balance: { type: 'number' }
 });
 ```
+
   * `minLength`. Can be used with strings or arrays.
+
 ```javascript
 validator.create({
   firstname: { type: 'string', minLength: 3 }
 });
 ```
+
   * `maxLength`. Can be used with strings or arrays.
+
 ```javascript
 validator.create({
   firstname: { type: 'string', maxLength: 20, minLength: 2 }
 });
 ```
+
   * `custom` (See heading below)
 
 ### Custom validation rules
