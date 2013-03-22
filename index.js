@@ -2,8 +2,6 @@
 // (c) 2013 Lupo Montero
 // Licensed under the MIT license.
 
-/*global exports */
-
 (function () {
 
   // Reference to global object.
@@ -80,16 +78,19 @@
 
       if (!isSomething(v)) { return; }
 
+      var condition;
       switch (options) {
-      case 'boolean': if (!_.isBoolean(v)) { return msg; } break;
-      case 'number': if (!_.isNumber(v)) { return msg; } break;
-      case 'string': if (!_.isString(v)) { return msg; } break;
-      case 'date': if (!_.isDate(v)) { return msg; } break;
-      case 'array': if (!_.isArray(v)) { return msg; } break;
-      case 'email': if (!validator.REGEXP_EMAIL.test(v)) { return msg; } break;
-      case 'url': if (!validator.REGEXP_URL.test(v)) { return msg; } break;
-      case 'domain': if (!validator.REGEXP_DOMAIN.test(v)) { return msg; } break;
+        case 'boolean' : condition = (_.isBoolean(v));                  break;
+        case 'number'  : condition = (_.isNumber(v));                   break;
+        case 'string'  : condition = (_.isString(v));                   break;
+        case 'date'    : condition = (_.isDate(v));                     break;
+        case 'array'   : condition = (_.isArray(v));                    break;
+        case 'email'   : condition = (validator.REGEXP_EMAIL.test(v));  break;
+        case 'url'     : condition = (validator.REGEXP_URL.test(v));    break;
+        case 'domain'  : condition = (validator.REGEXP_DOMAIN.test(v)); break;
       }
+
+      if (!condition) { return msg; }
     },
 
     minLength: function (name, v, options) {
