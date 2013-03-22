@@ -116,8 +116,6 @@ validator.create({
 });
 ```
 
-  * `custom` (See heading below)
-
 ### Custom validation rules
 
 ```javascript
