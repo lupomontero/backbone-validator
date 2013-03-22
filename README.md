@@ -31,16 +31,78 @@ model.set({ type: 'not user' }, { validate: true });
 
 ### validator.create( schema )
 
+To use this module you basically invoke `validator.create()` passing it a
+`schema` object. This will return a function, and we set the model's `validate`
+property to this function, so that `Backbone` can use when setting attribute
+values (ie: when `model.save()` is invoked).
+
+### Defining a schema
+
+A `schema` object contains a property for each `attribute` we want to validate,
+the property name is the `attribute` name and the value is an object containing
+a set of rules.
+
+In the example below we want to validate the `ctime`, `status` and `message`
+attribues in our model, so our schema will look something like this:
+
+```javascript
+validator.create({
+  ctime: { type: 'date' },
+  status: { oneOf: [ 1, 2, 3 ] },
+  message: { type: string, minLength: 5 }
+});
+```
+
 ### Rules
 
+Eache rule is declared passing it `options`. This `options` depend on each of
+the rules (ie: for the `required` rule `options` is just a boolean, for the
+`oneOf` its an array, for `custom` its a function and so on.
+
   * `required`
+```javascript
+validator.create({
+  message: { required: true }
+});
+```
   * `equal`
+```javascript
+validator.create({
+  type: { equal: 'user' }
+});
+```
   * `regexp`
+```javascript
+validator.create({
+  birthday: { regexp: /^\d{2}\/\d{2}\/\d{4}$/ }
+});
+```
   * `oneOf`
-  * `type`
-  * `minLength`
-  * `maxLength`
-  * `custom`
+```javascript
+validator.create({
+  colour: { oneOf: [ 'red', 'green', 'blue' ] }
+});
+```
+  * `type`. Types: `boolean`, `number`, `string`, `date`, `array`, `email`,
+    `url` and `domain`.
+```javascript
+validator.create({
+  balance: { type: 'number' }
+});
+```
+  * `minLength`. Can be used with strings or arrays.
+```javascript
+validator.create({
+  firstname: { type: 'string', minLength: 3 }
+});
+```
+  * `maxLength`. Can be used with strings or arrays.
+```javascript
+validator.create({
+  firstname: { type: 'string', maxLength: 20, minLength: 2 }
+});
+```
+  * `custom` (See heading below)
 
 ### Custom validation rules
 
