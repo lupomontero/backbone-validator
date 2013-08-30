@@ -1,4 +1,4 @@
-// backbone-validator.js 0.0.8
+// backbone-validator.js 0.0.9
 // (c) 2013 Lupo Montero
 // Licensed under the MIT license.
 
@@ -15,7 +15,7 @@
     validator = root.validator = {};
   }
 
-  validator.VERSION = '0.0.8';
+  validator.VERSION = '0.0.9';
 
   // Require Underscore, if we're on the server, and it's not already present.
   var _ = root._;
