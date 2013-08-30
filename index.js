@@ -24,7 +24,7 @@
   // Regular expressions for special string types.
   validator.REGEXP_EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   validator.REGEXP_URL = /^(https?:\/\/)?([\da-z\.\-]+)\.([a-z\.]{2,6})([\/\w \.\-]*)*\/?$/;
-  validator.REGEXP_DOMAIN = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?.[a-z]{2,4}(.[a-z]{2-4})?/i;
+  validator.REGEXP_DOMAIN = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.[a-z]{2,4}(\.[a-z]{2-4})?/i;
 
   // A helper function to figure out if a value is "something".
   function isSomething(v) {
