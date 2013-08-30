@@ -25,16 +25,11 @@ module.exports = function (grunt) {
           'backbone-validator-min.js': [ 'index.js' ]
         }
       }
-    },
-
-    watch: {
-      files: '<config:jshint.files>',
-      tasks: 'jshint nodeunit'
     }
 
   });
 
   // Default task.
-  grunt.registerTask('default', [ 'jshint', 'nodeunit' ]);
+  grunt.registerTask('default', [ 'jshint', 'nodeunit', 'uglify' ]);
 
 };
