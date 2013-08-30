@@ -1,23 +1,23 @@
 /*globals require, exports */
 
-var
-  Backbone = require('backbone'),
-  validator = require('./index'),
+var Backbone = require('backbone');
+var validator = require('./index');
 
-  MyModel = Backbone.Model.extend({
-    validate: validator.create({
-      type: { equal: 'user' },
-      ctime: { type: 'date' },
-      someRequiredField: { required: true },
-      firstname: { type: 'string' },
-      lastname: { type: 'string', minLength: 2, maxLength: 24 },
-      organisation: { type: 'string', maxLength: 24 },
-      email: { type: 'email', required: true },
-      url: { type: 'url' },
-      an_array: { type: 'array' },
-      a_non_empty_array: { type: 'array', minLength: 1 }
-    })
-  });
+var MyModel = Backbone.Model.extend({
+  validate: validator.create({
+    type: { equal: 'user' },
+    ctime: { type: 'date' },
+    someRequiredField: { required: true },
+    firstname: { type: 'string' },
+    lastname: { type: 'string', minLength: 2, maxLength: 24 },
+    organisation: { type: 'string', maxLength: 24 },
+    email: { type: 'email', required: true },
+    url: { type: 'url' },
+    an_array: { type: 'array' },
+    a_non_empty_array: { type: 'array', minLength: 1 },
+    domain: { type: 'domain' }
+  })
+});
 
 exports.validateAllGood = function (t) {
   var m = new MyModel({
@@ -151,4 +151,34 @@ exports.dontAllowEmptyArrayIfMinLengthMoreThanZero = function (t) {
     t.done();
   });
   m.set({ a_non_empty_array: [] }, { validate: true });
+};
+
+exports.badDomain = function (t) {
+  var m = new MyModel();
+  var domains = [ 'not a domain', 'd.d', 'doo.', '$tyu.di', '-djdjn.com' ];
+  var count = 0;
+  m.on('invalid', function (m, err) {
+    t.ok(/must be of type domain/.test(err));
+    if (++count === domains.length) {
+      t.done();
+    }
+  });
+  domains.forEach(function (domain) {
+    m.set('domain', domain, { validate: true });
+  });
+};
+
+exports.goodDomain = function (t) {
+  var m = new MyModel();
+  var domains = [ 'pepe.com', 'enoi.se', 'foo.ac.uk', 'aaaaa.com.jp', 'ba.com' ];
+  var count = 0;
+  m.on('change', function () {
+    t.equal(m.get('domain'), domains[count]);
+    if (++count === domains.length) {
+      t.done();
+    }
+  });
+  domains.forEach(function (domain) {
+    m.set('domain', domain, { validate: true });
+  });
 };
