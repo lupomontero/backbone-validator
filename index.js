@@ -15,7 +15,7 @@
     validator = root.validator = {};
   }
 
-  validator.VERSION = '0.0.9';
+  validator.VERSION = '0.1.0';
 
   // Require Underscore, if we're on the server, and it's not already present.
   var _ = root._;
@@ -35,9 +35,11 @@
   function validateAttr(name, value, schema) {
     var rule, msg;
     for (rule in schema) {
-      if (schema.hasOwnProperty(rule) && _.isFunction(rules[rule])) {
+      if (schema.hasOwnProperty(rule) && rule !== 'msg' && _.isFunction(rules[rule])) {
         msg = rules[rule](name, value, schema[rule]);
-        if (msg) { return msg; }
+        if (msg) {
+            return {attr: name, msg: schema.msg || msg};
+        }
       }
     }
   }
@@ -124,12 +126,19 @@
   validator.create = function (schema) {
     schema = schema || {};
     return function (attrs, options) {
-      var k, msg;
+      var k, msg, msgs = [];
       for (k in attrs) {
         if (attrs.hasOwnProperty(k)) {
           msg = validateAttr(k, attrs[k], schema[k]);
-          if (msg) { return msg; }
+          if (msg) {
+              msgs.push(msg);
+          }
         }
+      }
+      //might need to do a length check
+      //and return undef if empty
+      if (msgs.length) {
+          return msgs;
       }
     };
   };

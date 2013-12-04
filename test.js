@@ -9,6 +9,7 @@ var MyModel = Backbone.Model.extend({
     ctime: { type: 'date' },
     someRequiredField: { required: true },
     firstname: { type: 'string' },
+    middlename: { type: 'string', msg: 'Middle name is required', required: true },
     lastname: { type: 'string', minLength: 2, maxLength: 24 },
     organisation: { type: 'string', maxLength: 24 },
     email: { type: 'email', required: true },
@@ -33,12 +34,28 @@ exports.validateAllGood = function (t) {
   t.equal(m.get('email'), 'lupo@e-noise.com');
   t.done();
 };
+exports.validateMultipleBad = function (t) {
+  var m = new MyModel();
+
+  m.on('invalid', function (m, err) {
+    t.equal(err.length, 2);
+    t.equal(err[0].attr, 'lastname');
+    t.equal(err[0].msg, 'Attribute "lastname" was expected to have a minimum length of 2 and the current value ("")has a length of 0.');
+    t.done();
+  });
+  m.set({
+    type: 'user',
+    firstname: 'Lupo',
+    lastname: '',
+    email: 'lupoe-noise.com'
+  }, { validate: true });
+};
 
 exports.validateBadEmail = function (t) {
   var m = new MyModel();
   m.on('invalid', function (m, err) {
     t.equal(m.get('email'), undefined);
-    t.equal(err, 'Attribute "email" must be of type email and got value "not an email".');
+    t.equal(err[0].msg, 'Attribute "email" must be of type email and got value "not an email".');
     t.done();
   });
   m.set({ email: 'not an email' }, { validate: true });
@@ -47,7 +64,7 @@ exports.validateBadEmail = function (t) {
 exports.validateStringMaxLengthFailure = function (t) {
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.ok(/maximum length/.test(err));
+    t.ok(/maximum length/.test(err[0].msg));
     t.equal(m.get('organisation'), undefined);
     t.done();
   });
@@ -59,7 +76,7 @@ exports.validateStringMaxLengthFailure = function (t) {
 exports.stringMinLengthFailureWithBothMinAndMaxLength = function (t) {
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.ok(/minimum length/.test(err));
+    t.ok(/minimum length/.test(err[0].msg));
     t.equal(m.get('lastname'), undefined);
     t.done();
   });
@@ -69,7 +86,7 @@ exports.stringMinLengthFailureWithBothMinAndMaxLength = function (t) {
 exports.stringMaxLengthFailureWithBothMinAndMaxLength = function (t) {
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.ok(/maximum length/.test(err));
+    t.ok(/maximum length/.test(err[0].msg));
     t.equal(m.get('lastname'), undefined);
     t.done();
   });
@@ -88,7 +105,7 @@ exports.validateStringMinAndMaxLengthTogetherSuccess = function (t) {
 exports.tryToSetRequiredFieldToEmptyString = function (t) {
   var m = new MyModel({ someRequiredField: 'foo' });
   m.on('invalid', function (m, err) {
-    t.equal(err, 'Attribute "someRequiredField" is required.');
+    t.equal(err[0].msg, 'Attribute "someRequiredField" is required.');
     t.equal(m.get('someRequiredField'), 'foo');
     t.done();
   });
@@ -116,7 +133,7 @@ exports.allowToSetDateFieldToNullWhenNotRequired = function (t) {
 exports.doNotAllowToSetDateFieldToAnythingOtherThanADate = function (t) {
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.equal(err, 'Attribute "ctime" must be of type date and got value "not a date".');
+    t.equal(err[0].msg, 'Attribute "ctime" must be of type date and got value "not a date".');
     t.equal(m.get('ctime'), undefined);
     t.done();
   });
@@ -126,7 +143,7 @@ exports.doNotAllowToSetDateFieldToAnythingOtherThanADate = function (t) {
 exports.notAUrl = function (t) {
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.equal(err, 'Attribute "url" must be of type url and got value "not a url".');
+    t.equal(err[0].msg, 'Attribute "url" must be of type url and got value "not a url".');
     t.equal(m.get('url'), undefined);
     t.done();
   });
@@ -136,7 +153,7 @@ exports.notAUrl = function (t) {
 exports.tryToSetAnArrayFieldToSomethingOtherThanAnArray = function (t) {
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.ok(/type array/.test(err));
+    t.ok(/type array/.test(err[0].msg));
     t.equal(m.get('an_array'), undefined);
     t.done();
   });
@@ -146,7 +163,7 @@ exports.tryToSetAnArrayFieldToSomethingOtherThanAnArray = function (t) {
 exports.dontAllowEmptyArrayIfMinLengthMoreThanZero = function (t) {
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.ok(/minimum length/.test(err));
+    t.ok(/minimum length/.test(err[0].msg));
     t.equal(m.get('an_array'), undefined);
     t.done();
   });
@@ -158,7 +175,7 @@ exports.badDomain = function (t) {
   var domains = [ 'not a domain', 'd.d', 'doo.', '$tyu.di', '-djdjn.com' ];
   var count = 0;
   m.on('invalid', function (m, err) {
-    t.ok(/must be of type domain/.test(err));
+    t.ok(/must be of type domain/.test(err[0].msg));
     if (++count === domains.length) {
       t.done();
     }
@@ -181,4 +198,14 @@ exports.goodDomain = function (t) {
   domains.forEach(function (domain) {
     m.set('domain', domain, { validate: true });
   });
+};
+
+exports.overrideBuiltInErrorMessage = function (t) {
+  var m = new MyModel({ middlename: 'foo' });
+  m.on('invalid', function (m, err) {
+    t.equal(err[0].msg, 'Middle name is required');
+    t.equal(m.get('middlename'), 'foo');
+    t.done();
+  });
+  m.set({ middlename: '' }, { validate: true });
 };
