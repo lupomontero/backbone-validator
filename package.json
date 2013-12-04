@@ -1,11 +1,11 @@
 {
   "name": "backbone-validator",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "A super simple validator module for Backbone.",
   "author": "Lupo Montero <lupo@enoi.se>",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/lupomontero/backbone-validator.git"
+    "type": "git",
+    "url": "https://github.com/lupomontero/backbone-validator.git"
   },
   "dependencies": {
     "underscore": "1.5.1"
@@ -21,5 +21,7 @@
     "pretest": "grunt jshint",
     "test": "grunt nodeunit"
   },
-  "engines": { "node": ">= 0.8.0" }
+  "engines": {
+    "node": ">= 0.8.0"
+  }
 }
