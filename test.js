@@ -21,6 +21,7 @@ var MyModel = Backbone.Model.extend({
 });
 
 exports.validateAllGood = function (t) {
+  t.expect(4);
   var m = new MyModel({
     type: 'user',
     firstname: 'Lupo',
@@ -36,6 +37,7 @@ exports.validateAllGood = function (t) {
 };
 exports.validateMultipleBad = function (t) {
   var m = new MyModel();
+  t.expect(3);
 
   m.on('invalid', function (m, err) {
     t.equal(err.length, 2);
@@ -52,6 +54,7 @@ exports.validateMultipleBad = function (t) {
 };
 
 exports.validateBadEmail = function (t) {
+  t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
     t.equal(m.get('email'), undefined);
@@ -62,6 +65,7 @@ exports.validateBadEmail = function (t) {
 };
 
 exports.validateStringMaxLengthFailure = function (t) {
+  t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
     t.ok(/maximum length/.test(err[0].msg));
@@ -74,6 +78,7 @@ exports.validateStringMaxLengthFailure = function (t) {
 };
 
 exports.stringMinLengthFailureWithBothMinAndMaxLength = function (t) {
+  t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
     t.ok(/minimum length/.test(err[0].msg));
@@ -84,6 +89,7 @@ exports.stringMinLengthFailureWithBothMinAndMaxLength = function (t) {
 };
 
 exports.stringMaxLengthFailureWithBothMinAndMaxLength = function (t) {
+  t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
     t.ok(/maximum length/.test(err[0].msg));
@@ -94,6 +100,7 @@ exports.stringMaxLengthFailureWithBothMinAndMaxLength = function (t) {
 };
 
 exports.validateStringMinAndMaxLengthTogetherSuccess = function (t) {
+  t.expect(1);
   var m = new MyModel();
   m.on('change', function () {
     t.equal(m.get('lastname'), 'A good lastname');
@@ -103,6 +110,7 @@ exports.validateStringMinAndMaxLengthTogetherSuccess = function (t) {
 };
 
 exports.tryToSetRequiredFieldToEmptyString = function (t) {
+  t.expect(2);
   var m = new MyModel({ someRequiredField: 'foo' });
   m.on('invalid', function (m, err) {
     t.equal(err[0].msg, 'Attribute "someRequiredField" is required.');
@@ -113,6 +121,7 @@ exports.tryToSetRequiredFieldToEmptyString = function (t) {
 };
 
 exports.allowToSetEmptyStringWhenNotRequired = function (t) {
+  t.expect(1);
   var m = new MyModel({ firstname: 'hahaha' });
   m.on('change', function () {
     t.equal(m.get('firstname'), '');
@@ -122,6 +131,7 @@ exports.allowToSetEmptyStringWhenNotRequired = function (t) {
 };
 
 exports.allowToSetDateFieldToNullWhenNotRequired = function (t) {
+  t.expect(1);
   var m = new MyModel({ ctime: new Date() });
   m.on('change', function () {
     t.equal(m.get('ctime'), null);
@@ -131,6 +141,7 @@ exports.allowToSetDateFieldToNullWhenNotRequired = function (t) {
 };
 
 exports.doNotAllowToSetDateFieldToAnythingOtherThanADate = function (t) {
+  t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
     t.equal(err[0].msg, 'Attribute "ctime" must be of type date and got value "not a date".');
@@ -141,6 +152,7 @@ exports.doNotAllowToSetDateFieldToAnythingOtherThanADate = function (t) {
 };
 
 exports.notAUrl = function (t) {
+  t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
     t.equal(err[0].msg, 'Attribute "url" must be of type url and got value "not a url".');
@@ -151,6 +163,7 @@ exports.notAUrl = function (t) {
 };
 
 exports.tryToSetAnArrayFieldToSomethingOtherThanAnArray = function (t) {
+  t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
     t.ok(/type array/.test(err[0].msg));
@@ -161,6 +174,7 @@ exports.tryToSetAnArrayFieldToSomethingOtherThanAnArray = function (t) {
 };
 
 exports.dontAllowEmptyArrayIfMinLengthMoreThanZero = function (t) {
+  t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
     t.ok(/minimum length/.test(err[0].msg));
@@ -171,6 +185,7 @@ exports.dontAllowEmptyArrayIfMinLengthMoreThanZero = function (t) {
 };
 
 exports.badDomain = function (t) {
+  t.expect(5);
   var m = new MyModel();
   var domains = [ 'not a domain', 'd.d', 'doo.', '$tyu.di', '-djdjn.com' ];
   var count = 0;
@@ -186,6 +201,7 @@ exports.badDomain = function (t) {
 };
 
 exports.goodDomain = function (t) {
+  t.expect(5);
   var m = new MyModel();
   var domains = [ 'pepe.com', 'enoi.se', 'foo.ac.uk', 'aaaaa.com.jp', 'ba.com' ];
   var count = 0;
@@ -201,6 +217,7 @@ exports.goodDomain = function (t) {
 };
 
 exports.overrideBuiltInErrorMessage = function (t) {
+  t.expect(2);
   var m = new MyModel({ middlename: 'foo' });
   m.on('invalid', function (m, err) {
     t.equal(err[0].msg, 'Middle name is required');
