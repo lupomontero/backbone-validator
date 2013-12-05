@@ -35,8 +35,8 @@
   function validateAttr(name, value, schema) {
     var rule, msg;
     for (rule in schema) {
-      if (schema.hasOwnProperty(rule) && rule !== 'msg' && _.isFunction(rules[rule])) {
-        msg = rules[rule](name, value, schema[rule]);
+      if (schema.hasOwnProperty(rule) && rule !== 'msg' && _.isFunction(validator.rules[rule])) {
+        msg = validator.rules[rule](name, value, schema[rule]);
         if (msg) {
             return {attr: name, msg: schema.msg || msg};
         }
@@ -45,7 +45,7 @@
   }
 
   // Validation rules.
-  var rules = {
+  validator.rules = {
 
     // This just checks whether a value is "something".
     required: function (name, v, options) {
@@ -129,9 +129,13 @@
       var k, msg, msgs = [];
       for (k in attrs) {
         if (attrs.hasOwnProperty(k)) {
-          msg = validateAttr(k, attrs[k], schema[k]);
-          if (msg) {
+          if (attrs[k] && _.isFunction(attrs[k].validate)) {
+            msgs = msgs.concat(attrs[k].validate(attrs[k].attributes, options));
+          } else {
+            msg = validateAttr(k, attrs[k], schema[k]);
+            if (msg) {
               msgs.push(msg);
+            }
           }
         }
       }

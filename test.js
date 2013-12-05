@@ -2,7 +2,11 @@
 
 var Backbone = require('backbone');
 var validator = require('./index');
-
+var SmallModel = Backbone.Model.extend({
+  validate: validator.create({
+    someRequiredField: {required: true}
+  })
+});
 var MyModel = Backbone.Model.extend({
   validate: validator.create({
     type: { equal: 'user' },
@@ -225,4 +229,19 @@ exports.overrideBuiltInErrorMessage = function (t) {
     t.done();
   });
   m.set({ middlename: '' }, { validate: true });
+};
+exports.subobjectValidation = function (t) {
+  t.expect(2);
+  var s = new SmallModel(),
+  m = new MyModel({bar: s});
+  s.on('invalid', function (m, err) {
+    t.equal(1,err.length);
+    t.done();
+  });
+  m.on('invalid', function (m, err) {
+    t.equal(1, err.length);
+    s.set('someRequiredField', '', {validate: true});
+  });
+  m.get('bar').set('someRequiredField', '');
+  m.isValid();
 };
