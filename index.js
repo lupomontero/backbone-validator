@@ -126,11 +126,14 @@
   validator.create = function (schema) {
     schema = schema || {};
     return function (attrs, options) {
-      var k, msg, msgs = [];
+      var k, msg, submsgs, msgs = [];
       for (k in attrs) {
         if (attrs.hasOwnProperty(k)) {
           if (attrs[k] && _.isFunction(attrs[k].validate)) {
-            msgs = msgs.concat(attrs[k].validate(attrs[k].attributes, options));
+            submsgs = attrs[k].validate(attrs[k].attributes, options);
+            if (submsgs) {
+              msgs = msgs.concat();
+            }
           } else {
             msg = validateAttr(k, attrs[k], schema[k]);
             if (msg) {
