@@ -132,7 +132,7 @@
           if (attrs[k] && _.isFunction(attrs[k].validate)) {
             submsgs = attrs[k].validate(attrs[k].attributes, options);
             if (submsgs) {
-              msgs = msgs.concat();
+              msgs = msgs.concat(submsgs);
             }
           } else {
             msg = validateAttr(k, attrs[k], schema[k]);
