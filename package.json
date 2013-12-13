@@ -1,25 +1,48 @@
 {
   "name": "backbone-validator",
-  "version": "0.0.9",
+  "version": "0.3.0",
   "description": "A super simple validator module for Backbone.",
   "author": "Lupo Montero <lupo@enoi.se>",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/lupomontero/backbone-validator.git"
+    "type": "git",
+    "url": "https://github.com/lupomontero/backbone-validator.git"
   },
   "dependencies": {
-    "underscore": "1.5.1"
+    "underscore": "1.5.x"
   },
   "devDependencies": {
-    "backbone": "1.0.0",
-    "grunt": "~0.4.1",
-    "grunt-contrib-nodeunit": "~0.2.0",
-    "grunt-contrib-jshint": "~0.6.4",
-    "grunt-contrib-uglify": "~0.2.2"
+    "backbone": "1.1.x",
+    "grunt": "~0.4.x",
+    "grunt-contrib-nodeunit": "~0.2.x",
+    "grunt-contrib-jshint": "~0.7.x",
+    "grunt-contrib-uglify": "~0.2.x"
   },
   "scripts": {
     "pretest": "grunt jshint",
     "test": "grunt nodeunit"
   },
-  "engines": { "node": ">= 0.8.0" }
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "jshintConfig": {
+
+    "devel": true,
+    "browser": true,
+    "node": true,
+
+
+    "eqnull": true,
+    "sub": true,
+
+    "bitwise": true,
+    "immed": true,
+    "freeze": true,
+    "indent": 2,
+    "latedef": true,
+    "newcap": true,
+    "noarg": true,
+    "nonew": true,
+    "undef": true,
+    "trailing": true
+  }
 }
