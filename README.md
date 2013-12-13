@@ -22,7 +22,7 @@ var validator = require('validator');
 
 var MyModel = Backbone.Model.extend({
   validate: validator.create({
-    type: { equal: 'user' },
+    type: { equal: 'user', msg: "type must be `user`" },
     firstname: { type: 'string', minLength: 3, maxlength: 20 },
     email: { type: 'email' }
   })
@@ -31,7 +31,7 @@ var MyModel = Backbone.Model.extend({
 var model = new MyModel();
 model.on('invalid', function (m, err) {
   // Validation failed
-  // `err` will be a string with the error message.
+  // `err` will be an object with the error message {type:'message'}.
 });
 model.set({ type: 'not user' }, { validate: true });
 ```
@@ -101,7 +101,7 @@ validator.create({
 ```
 
   * `type`. Types: `boolean`, `number`, `string`, `date`, `array`, `email`,
-    `url` and `domain`.
+    `model`, `collection`, `url` and `domain`.
 
 ```javascript
 validator.create({
@@ -124,6 +124,14 @@ validator.create({
   firstname: { type: 'string', maxLength: 20, minLength: 2 }
 });
 ```
+  
+  * `recurse`. Can be used to do submodel validation.
+
+```javascript
+validator.create({
+  submodel: { type: 'model', recurse: true }
+});
+```
 
 ### Custom validation rules
 
@@ -142,9 +150,18 @@ var MyModel = Backbone.Model.extend({
 });
 ```
 
+### Custom error messages
+
+backbone-validator comes with default error messages that can be overriden.
+
+```javascript
+validator.create({
+  field: { regexp: /aregex/, msg: "A custom message." }
+});
+```
+
 ---
 
 ## TODO
 
-* Make error messages customisable.
 * Add browser tests.
