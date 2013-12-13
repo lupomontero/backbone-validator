@@ -1,18 +1,20 @@
 /*globals require, exports */
 
-var _ = require('underscore'),
-Backbone = require('backbone'),
-validator = require('./index');
+var _ = require('underscore');
+var Backbone = require('backbone');
+var validator = require('./index');
 
 var SubModel = Backbone.Model.extend({
   validate: validator.create({
-    someRequiredField: {required: true}
+    someRequiredField: { required: true }
   })
-}),
-SubCollection = Backbone.Collection.extend({
+});
+
+var SubCollection = Backbone.Collection.extend({
   model: SubModel
-}),
-MyModel = Backbone.Model.extend({
+});
+
+var MyModel = Backbone.Model.extend({
   defaults: {
     type: 'user',
     someRequiredField: true,
@@ -21,7 +23,7 @@ MyModel = Backbone.Model.extend({
     organisation: 'org',
     email: 'test@example.com',
     a_non_empty_array: ['a'],
-    submodel: new SubModel({someRequiredField: true}),
+    submodel: new SubModel({ someRequiredField: true }),
     subcollection: new SubCollection()
   },
   validate: validator.create({
@@ -44,25 +46,27 @@ MyModel = Backbone.Model.extend({
 
 exports.validateEmptyAllGood = function (t) {
   t.expect(1);
-  var m = new MyModel({}, {validate: true});
+  var m = new MyModel({}, { validate: true });
   t.ok(m.isValid());
   t.done();
 };
+
 exports.validateAllGood = function (t) {
   t.expect(4);
   var m = new MyModel({
     type: 'user',
-    firstname: 'Lupo',
-    lastname: 'Montero',
-    email: 'lupo@e-noise.com'
+    firstname: 'John',
+    lastname: 'Doe',
+    email: 'john.doe@example.com'
   }, { validate: true });
 
   t.equal(m.get('type'), 'user');
-  t.equal(m.get('firstname'), 'Lupo');
-  t.equal(m.get('lastname'), 'Montero');
-  t.equal(m.get('email'), 'lupo@e-noise.com');
+  t.equal(m.get('firstname'), 'John');
+  t.equal(m.get('lastname'), 'Doe');
+  t.equal(m.get('email'), 'john.doe@example.com');
   t.done();
 };
+
 exports.validateMultipleBad = function (t) {
   var m = new MyModel();
   t.expect(2);
@@ -74,9 +78,9 @@ exports.validateMultipleBad = function (t) {
   });
   m.set({
     type: 'user',
-    firstname: 'Lupo',
+    firstname: 'John',
     lastname: '',
-    email: 'lupoe-noise.com'
+    email: 'john.doeexample.com'
   }, { validate: true });
 };
 
@@ -135,6 +139,7 @@ exports.validateStringMinAndMaxLengthTogetherSuccess = function (t) {
   });
   m.set({ lastname: 'A good lastname' }, { validate: true });
 };
+
 exports.missingRequiredField = function (t) {
   t.expect(1);
   var m = new MyModel({ someRequiredField: null });
@@ -260,30 +265,36 @@ exports.overrideBuiltInErrorMessage = function (t) {
   });
   m.set({ middlename: '' }, { validate: true });
 };
+
 exports.isModelSuccess = function (t) {
   t.expect(1);
-  m = new MyModel({foo: new SubModel({})});
+  var m = new MyModel({foo: new SubModel({})});
   m.validate = validator.create({
     foo: {type: 'model'}
   });
   t.ok(m.isValid());
   t.done();
 };
+
 exports.isCollectionSuccess = function (t) {
   t.expect(1);
-  m = new MyModel({foo: new Backbone.Collection({})});
+  var m = new MyModel({ foo: new Backbone.Collection({}) });
   m.validate = validator.create({
-    foo: {type: 'collection'}
+    foo: { type: 'collection' }
   });
   t.ok(m.isValid());
   t.done();
 };
+
 exports.recurseFailure = function (t) {
   t.expect(6);
-  var s = new SubModel(),
-  m = new MyModel({
+  var s = new SubModel();
+  var m = new MyModel({
     submodel: s,
-    subcollection: new SubCollection([{id: 'foo', someRequiredField: null}, {someRequiredField: null}])
+    subcollection: new SubCollection([
+      { id: 'foo', someRequiredField: null },
+      { someRequiredField: null }
+    ])
   });
   m.on('invalid', function (m, err) {
     t.ok(err.submodel);
@@ -297,37 +308,43 @@ exports.recurseFailure = function (t) {
   m.get('submodel').set('someRequiredField', '');
   t.ok(!m.isValid());
 };
+
 exports.recurseSuccess = function (t) {
   t.expect(1);
   var m = new MyModel({
     submodel: new SubModel(),
-    subcollection: new SubCollection([{someRequiredField: 'foo'}, {someRequiredField: 'bar'}])
+    subcollection: new SubCollection([
+      { someRequiredField: 'foo' },
+      { someRequiredField: 'bar' }
+    ])
   });
   m.get('submodel').set('someRequiredField', 's');
   t.ok(m.isValid());
   t.done();
 };
+
 exports.ruleExtension = function (t) {
-  v = require('./index');
+  var v = require('./index');
   v.rules.testrule = function () {
     return 'baz';
   };
-  m = new MyModel({foo: 'bar'});
+  var m = new MyModel({ foo: 'bar' });
   m.on('invalid', function (m, err) {
     t.ok(err.foo);
     t.done();
   });
   m.validate = v.create({
-    foo: {testrule: true}
+    foo: { testrule: true }
   });
   m.isValid();
 };
+
 exports.typeExtension = function (t) {
-  v = require('./index');
+  var v = require('./index');
   v.type.testtype = function () {
     return false;
   };
-  m = new MyModel({foo: 'bar'});
+  var m = new MyModel({ foo: 'bar' });
   m.on('invalid', function (m, err) {
     t.ok(/must be of type testtype/.test(err.foo));
     t.done();
@@ -337,3 +354,4 @@ exports.typeExtension = function (t) {
   });
   m.isValid();
 };
+
