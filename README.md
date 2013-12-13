@@ -12,7 +12,7 @@ In node:
 In the browser make sure that you add the
 [backbone-validator-min.js](https://raw.github.com/lupomontero/backbone-validator/master/backbone-validator-min.js)
 script after you have loaded both [Underscore](http://underscorejs.org) and
-[Backbone](http://backbonejs.org). The minimised file is 2k.
+[Backbone](http://backbonejs.org). The minimised file is 2.5k.
 
 ## Usage
 
