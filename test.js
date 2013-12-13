@@ -1,13 +1,29 @@
 /*globals require, exports */
 
-var Backbone = require('backbone');
-var validator = require('./index');
-var SmallModel = Backbone.Model.extend({
+var _ = require('underscore'),
+Backbone = require('backbone'),
+validator = require('./index');
+
+var SubModel = Backbone.Model.extend({
   validate: validator.create({
     someRequiredField: {required: true}
   })
-});
-var MyModel = Backbone.Model.extend({
+}),
+SubCollection = Backbone.Collection.extend({
+  model: SubModel
+}),
+MyModel = Backbone.Model.extend({
+  defaults: {
+    type: 'user',
+    someRequiredField: true,
+    middlename: 'middlename',
+    lastname: 'lastname',
+    organisation: 'org',
+    email: 'test@example.com',
+    a_non_empty_array: ['a'],
+    submodel: new SubModel({someRequiredField: true}),
+    subcollection: new SubCollection()
+  },
   validate: validator.create({
     type: { equal: 'user' },
     ctime: { type: 'date' },
@@ -20,10 +36,18 @@ var MyModel = Backbone.Model.extend({
     url: { type: 'url' },
     an_array: { type: 'array' },
     a_non_empty_array: { type: 'array', minLength: 1 },
-    domain: { type: 'domain' }
+    domain: { type: 'domain' },
+    submodel: { type: 'model', recurse: true },
+    subcollection: { type: 'collection', recurse: true }
   })
 });
 
+exports.validateEmptyAllGood = function (t) {
+  t.expect(1);
+  var m = new MyModel({}, {validate: true});
+  t.ok(m.isValid());
+  t.done();
+};
 exports.validateAllGood = function (t) {
   t.expect(4);
   var m = new MyModel({
@@ -41,12 +65,11 @@ exports.validateAllGood = function (t) {
 };
 exports.validateMultipleBad = function (t) {
   var m = new MyModel();
-  t.expect(3);
+  t.expect(2);
 
   m.on('invalid', function (m, err) {
-    t.equal(err.length, 2);
-    t.equal(err[0].attr, 'lastname');
-    t.equal(err[0].msg, 'Attribute "lastname" was expected to have a minimum length of 2 and the current value ("")has a length of 0.');
+    t.ok(err.email);
+    t.equal(err.lastname, '"lastname" was expected to have a minimum length of 2.');
     t.done();
   });
   m.set({
@@ -61,8 +84,8 @@ exports.validateBadEmail = function (t) {
   t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.equal(m.get('email'), undefined);
-    t.equal(err[0].msg, 'Attribute "email" must be of type email and got value "not an email".');
+    t.equal(m.get('email'), 'test@example.com');
+    t.equal(err.email, '"email" must be of type email and got value "not an email".');
     t.done();
   });
   m.set({ email: 'not an email' }, { validate: true });
@@ -72,8 +95,8 @@ exports.validateStringMaxLengthFailure = function (t) {
   t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.ok(/maximum length/.test(err[0].msg));
-    t.equal(m.get('organisation'), undefined);
+    t.ok(/maximum length/.test(err.organisation));
+    t.equal(m.get('organisation'), 'org');
     t.done();
   });
   m.set({
@@ -85,8 +108,8 @@ exports.stringMinLengthFailureWithBothMinAndMaxLength = function (t) {
   t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.ok(/minimum length/.test(err[0].msg));
-    t.equal(m.get('lastname'), undefined);
+    t.ok(/minimum length/.test(err.lastname));
+    t.equal(m.get('lastname'), 'lastname');
     t.done();
   });
   m.set({ lastname: 'S' }, { validate: true });
@@ -96,8 +119,8 @@ exports.stringMaxLengthFailureWithBothMinAndMaxLength = function (t) {
   t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.ok(/maximum length/.test(err[0].msg));
-    t.equal(m.get('lastname'), undefined);
+    t.ok(/maximum length/.test(err.lastname));
+    t.equal(m.get('lastname'), 'lastname');
     t.done();
   });
   m.set({ lastname: 'A super long lastname or what' }, { validate: true });
@@ -112,12 +135,18 @@ exports.validateStringMinAndMaxLengthTogetherSuccess = function (t) {
   });
   m.set({ lastname: 'A good lastname' }, { validate: true });
 };
+exports.missingRequiredField = function (t) {
+  t.expect(1);
+  var m = new MyModel({ someRequiredField: null });
+  t.ok(!m.isValid());
+  t.done();
+};
 
 exports.tryToSetRequiredFieldToEmptyString = function (t) {
   t.expect(2);
   var m = new MyModel({ someRequiredField: 'foo' });
   m.on('invalid', function (m, err) {
-    t.equal(err[0].msg, 'Attribute "someRequiredField" is required.');
+    t.equal(err.someRequiredField, '"someRequiredField" is required.');
     t.equal(m.get('someRequiredField'), 'foo');
     t.done();
   });
@@ -148,7 +177,7 @@ exports.doNotAllowToSetDateFieldToAnythingOtherThanADate = function (t) {
   t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.equal(err[0].msg, 'Attribute "ctime" must be of type date and got value "not a date".');
+    t.equal(err.ctime, '"ctime" must be of type date and got value "not a date".');
     t.equal(m.get('ctime'), undefined);
     t.done();
   });
@@ -159,7 +188,7 @@ exports.notAUrl = function (t) {
   t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.equal(err[0].msg, 'Attribute "url" must be of type url and got value "not a url".');
+    t.equal(err.url, '"url" must be of type url and got value "not a url".');
     t.equal(m.get('url'), undefined);
     t.done();
   });
@@ -170,7 +199,7 @@ exports.tryToSetAnArrayFieldToSomethingOtherThanAnArray = function (t) {
   t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.ok(/type array/.test(err[0].msg));
+    t.ok(/type array/.test(err.an_array));
     t.equal(m.get('an_array'), undefined);
     t.done();
   });
@@ -181,7 +210,7 @@ exports.dontAllowEmptyArrayIfMinLengthMoreThanZero = function (t) {
   t.expect(2);
   var m = new MyModel();
   m.on('invalid', function (m, err) {
-    t.ok(/minimum length/.test(err[0].msg));
+    t.ok(/minimum length/.test(err.a_non_empty_array));
     t.equal(m.get('an_array'), undefined);
     t.done();
   });
@@ -194,7 +223,7 @@ exports.badDomain = function (t) {
   var domains = [ 'not a domain', 'd.d', 'doo.', '$tyu.di', '-djdjn.com' ];
   var count = 0;
   m.on('invalid', function (m, err) {
-    t.ok(/must be of type domain/.test(err[0].msg));
+    t.ok(/must be of type domain/.test(err.domain));
     if (++count === domains.length) {
       t.done();
     }
@@ -221,27 +250,90 @@ exports.goodDomain = function (t) {
 };
 
 exports.overrideBuiltInErrorMessage = function (t) {
-  t.expect(2);
+  t.expect(3);
   var m = new MyModel({ middlename: 'foo' });
   m.on('invalid', function (m, err) {
-    t.equal(err[0].msg, 'Middle name is required');
+    t.ok(err.middlename);
+    t.equal(err.middlename, 'Middle name is required');
     t.equal(m.get('middlename'), 'foo');
     t.done();
   });
   m.set({ middlename: '' }, { validate: true });
 };
-exports.subobjectValidation = function (t) {
-  t.expect(2);
-  var s = new SmallModel(),
-  m = new MyModel({bar: s});
-  s.on('invalid', function (m, err) {
-    t.equal(1,err.length);
-    t.done();
+exports.isModelSuccess = function (t) {
+  t.expect(1);
+  m = new MyModel({foo: new SubModel({})});
+  m.validate = validator.create({
+    foo: {type: 'model'}
+  });
+  t.ok(m.isValid());
+  t.done();
+};
+exports.isCollectionSuccess = function (t) {
+  t.expect(1);
+  m = new MyModel({foo: new Backbone.Collection({})});
+  m.validate = validator.create({
+    foo: {type: 'collection'}
+  });
+  t.ok(m.isValid());
+  t.done();
+};
+exports.recurseFailure = function (t) {
+  t.expect(6);
+  var s = new SubModel(),
+  m = new MyModel({
+    submodel: s,
+    subcollection: new SubCollection([{id: 'foo', someRequiredField: null}, {someRequiredField: null}])
   });
   m.on('invalid', function (m, err) {
-    t.equal(1, err.length);
-    s.set('someRequiredField', '', {validate: true});
+    t.ok(err.submodel);
+    t.ok(err.submodel.someRequiredField);
+    t.ok(err.subcollection);
+    t.ok(err.subcollection.foo);
+    t.ok(err.subcollection.foo.someRequiredField);
+    t.equal(_(err.subcollection).size(), 2);
+    t.done();
   });
-  m.get('bar').set('someRequiredField', '');
+  m.get('submodel').set('someRequiredField', '');
+  t.ok(!m.isValid());
+};
+exports.recurseSuccess = function (t) {
+  t.expect(1);
+  var m = new MyModel({
+    submodel: new SubModel(),
+    subcollection: new SubCollection([{someRequiredField: 'foo'}, {someRequiredField: 'bar'}])
+  });
+  m.get('submodel').set('someRequiredField', 's');
+  t.ok(m.isValid());
+  t.done();
+};
+exports.ruleExtension = function (t) {
+  v = require('./index');
+  v.rules.testrule = function () {
+    return 'baz';
+  };
+  m = new MyModel({foo: 'bar'});
+  m.on('invalid', function (m, err) {
+    t.ok(err.foo);
+    t.done();
+  });
+  m.validate = v.create({
+    foo: {testrule: true}
+  });
+  m.isValid();
+};
+exports.typeExtension = function (t) {
+  v = require('./index');
+  v.type.testtype = function () {
+    return false;
+  };
+  m = new MyModel({foo: 'bar'});
+  m.on('invalid', function (m, err) {
+    t.ok(/must be of type testtype/.test(err.foo));
+    t.done();
+  });
+  m.validate = v.create({
+    foo: {type: 'testtype'}
+  });
   m.isValid();
 };

@@ -1,4 +1,4 @@
-// backbone-validator.js 0.0.9
+// backbone-validator.js 0.3.0
 // (c) 2013 Lupo Montero
 // Licensed under the MIT license.
 
@@ -15,16 +15,39 @@
     validator = root.validator = {};
   }
 
-  validator.VERSION = '0.1.0';
+  validator.VERSION = '0.3.0';
 
   // Require Underscore, if we're on the server, and it's not already present.
-  var _ = root._;
+  var _ = root._,
+  Backbone = root.Backbone;
   if (!_ && (typeof require !== 'undefined')) { _ = require('underscore'); }
+  if (!Backbone && (typeof require !== 'undefined')) { Backbone = require('backbone'); }
 
   // Regular expressions for special string types.
   validator.REGEXP_EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   validator.REGEXP_URL = /^(https?:\/\/)?([\da-z\.\-]+)\.([a-z\.]{2,6})([\/\w \.\-]*)*\/?$/;
   validator.REGEXP_DOMAIN = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.[a-z]{2,4}(\.[a-z]{2-4})?/i;
+
+  // A type function does not describe the error
+  // it merely returns a truthy / falsey value
+  // The type rule uses these functions to determine
+  // whether it should respond with an error msg
+  validator.type = {
+    'boolean': _.isBoolean,
+    number:    _.isNumber,
+    string:    _.isString,
+    date:      _.isDate,
+    array:     _.isArray,
+    email:     _.bind(validator.REGEXP_EMAIL.test, validator.REGEXP_EMAIL),
+    url:       _.bind(validator.REGEXP_URL.test, validator.REGEXP_URL),
+    domain:    _.bind(validator.REGEXP_DOMAIN.test, validator.REGEXP_DOMAIN)
+  };
+  validator.type.model = function (v) {
+    return v instanceof Backbone.Model;
+  };
+  validator.type.collection = function (v) {
+    return v instanceof Backbone.Collection;
+  };
 
   // A helper function to figure out if a value is "something".
   function isSomething(v) {
@@ -35,11 +58,10 @@
   function validateAttr(name, value, schema) {
     var rule, msg;
     for (rule in schema) {
-      if (schema.hasOwnProperty(rule) && rule !== 'msg' && _.isFunction(validator.rules[rule])) {
-        msg = validator.rules[rule](name, value, schema[rule]);
-        if (msg) {
-            return {attr: name, msg: schema.msg || msg};
-        }
+      if (schema.hasOwnProperty(rule) &&
+          _.isFunction(validator.rules[rule]) &&
+          (msg = validator.rules[rule](name, value, schema[rule]))) {
+        return schema.msg || msg;
       }
     }
   }
@@ -49,12 +71,12 @@
 
     // This just checks whether a value is "something".
     required: function (name, v, options) {
-      if (!isSomething(v)) { return 'Attribute "' + name + '" is required.'; }
+      if (!isSomething(v)) { return '"' + name + '" is required.'; }
     },
 
     equal: function (name, v, options) {
       if (v !== options) {
-        return 'Attribute "' + name + '" must be equal to "' + options +
+        return '"' + name + '" must be equal to "' + options +
                '" and got "' + v + '".';
       }
     },
@@ -62,53 +84,74 @@
     regexp: function (name, v, options) {
       if (_.isRegExp(options)) {
         if (!options.test(v)) {
-          return 'Attribute "' + name + '" didn\'t match regexp. (got: "' + v + '")';
+          return '"' + name + '" didn\'t match regexp. (got: "' + v + '")';
         }
       }
     },
 
     oneOf: function (name, v, options) {
       if (_.indexOf(options, v) === -1) {
-        return 'Attribute "' + name + '" must be one of "' +
+        return '"' + name + '" must be one of "' +
                options.join(', ') + '" and got "' + v + '" instead.';
       }
     },
 
-    type: function (name, v, options) {
-      var msg = 'Attribute "' + name + '" must be of type ' + options +
+    type: function (name, v, type) {
+      var msg = '"' + name + '" must be of type ' + type +
                 ' and got value "' + v + '".';
 
       if (!isSomething(v)) { return; }
 
-      var condition;
-      switch (options) {
-        case 'boolean' : condition = _.isBoolean(v);                  break;
-        case 'number'  : condition = _.isNumber(v);                   break;
-        case 'string'  : condition = _.isString(v);                   break;
-        case 'date'    : condition = _.isDate(v);                     break;
-        case 'array'   : condition = _.isArray(v);                    break;
-        case 'email'   : condition = validator.REGEXP_EMAIL.test(v);  break;
-        case 'url'     : condition = validator.REGEXP_URL.test(v);    break;
-        case 'domain'  : condition = validator.REGEXP_DOMAIN.test(v); break;
+      var typefunc = validator.type[type];
+      if (!typefunc ||
+         !typefunc(v)) {
+           return msg;
       }
-
-      if (!condition) { return msg; }
     },
 
     minLength: function (name, v, options) {
-      if (!_.isString(v) && !_.isArray(v)) { return; }
+      if (!_.isString(v) && !_.isArray(v)) {
+        return name + ' is not a String or Array';
+      }
       if (v.length < options) {
-        return 'Attribute "' + name + '" was expected to have a minimum ' +
-               'length of ' + options + ' and the current value ("' + v + '")' +
-               'has a length of ' + v.length + '.';
+        return '"' + name + '" was expected to have a minimum ' +
+               'length of ' + options + '.';
       }
     },
 
     maxLength: function (name, v, options) {
+      if (!_.isString(v) && !_.isArray(v)) {
+        return name + ' is not a String or Array';
+      }
       if (v.length > options) {
-        return  'Attribute "' + name + '" was expected to have a maximum ' +
-                'length of ' + options + ' and the current value ("' + v +
-                '") has a length of ' + v.length + '.';
+        return '"' + name + '" was expected to have a maximum ' +
+                'length of ' + options;
+      }
+    },
+
+    recurse: function (name, v, recurse) {
+      var err;
+      if (!recurse) {
+        return;
+      }
+      if (v &&
+          _.isFunction(v.validate) &&
+          (err = v.validate(v.attributes)) &&
+          _(err).size()) {
+        return err;
+      } else if (v && validator.type.collection(v)) {
+        err = {};
+        v.each(function (m) {
+          var e = m.validate(m.attributes);
+          if (e) {
+            err[m.id || m.cid] = e;
+          }
+        });
+        if (_(err).size()) {
+          return err;
+        }
+      } else if (!v || !_.isFunction(v.validate)) {
+        return '"' + name + '": has no validate method';
       }
     },
 
@@ -126,25 +169,13 @@
   validator.create = function (schema) {
     schema = schema || {};
     return function (attrs, options) {
-      var k, msg, submsgs, msgs = [];
-      for (k in attrs) {
-        if (attrs.hasOwnProperty(k)) {
-          if (attrs[k] && _.isFunction(attrs[k].validate)) {
-            submsgs = attrs[k].validate(attrs[k].attributes, options);
-            if (submsgs) {
-              msgs = msgs.concat(submsgs);
-            }
-          } else {
-            msg = validateAttr(k, attrs[k], schema[k]);
-            if (msg) {
-              msgs.push(msg);
-            }
-          }
+      var k, msg, submsgs, msgs = {};
+      for (k in schema) {
+        if ((msg = validateAttr(k, attrs[k], schema[k]))) {
+          msgs[k] = msg;
         }
       }
-      //might need to do a length check
-      //and return undef if empty
-      if (msgs.length) {
+      if (_(msgs).size()) {
           return msgs;
       }
     };
