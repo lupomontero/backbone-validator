@@ -105,7 +105,7 @@
       var typefunc = validator.type[type];
       if (!typefunc ||
          !typefunc(v)) {
-           return msg;
+        return msg;
       }
     },
 
@@ -157,7 +157,7 @@
 
     custom: function (name, v, options) {
       if (_.isFunction(options)) {
-        msg = options(v);
+        var msg = options(v);
         if (msg) { return msg; }
       }
     }
@@ -176,7 +176,7 @@
         }
       }
       if (_(msgs).size()) {
-          return msgs;
+        return msgs;
       }
     };
   };
