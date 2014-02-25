@@ -165,3 +165,7 @@ validator.create({
 ## TODO
 
 * Add browser tests.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/lupomontero/backbone-validator/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
